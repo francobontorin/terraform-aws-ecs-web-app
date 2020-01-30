@@ -139,6 +139,7 @@ module "ecs_alb_service_task" {
   tags                              = var.tags
   volumes                           = var.volumes
   ecs_load_balancers                = local.load_balancers
+  assign_public_ip                  = true
 }
 
 module "ecs_codepipeline" {
