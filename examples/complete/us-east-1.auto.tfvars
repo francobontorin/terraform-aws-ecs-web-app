@@ -100,7 +100,7 @@ autoscaling_scale_down_cooldown = 300
 
 poll_source_changes = false
 
-webhook_enabled = false
+webhook_enabled = true
 
 webhook_target_action = "Source"
 
