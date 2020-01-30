@@ -1,6 +1,6 @@
-region = "us-east-2"
+region = "us-east-1"
 
-availability_zones = ["us-east-2a", "us-east-2b"]
+availability_zones = ["us-east-1a", "us-east-1b"]
 
 namespace = "eg"
 
@@ -8,9 +8,9 @@ stage = "test"
 
 name = "ecs-web-app"
 
-vpc_cidr_block = "172.16.0.0/16"
+vpc_cidr_block = "172.1.0.0/16"
 
-container_image = "cloudposse/default-backend"
+container_image = "francobontorin/default-backend"
 
 container_cpu = 256
 
@@ -52,7 +52,7 @@ alb_ingress_listener_unauthenticated_priority = 1000
 
 alb_ingress_unauthenticated_paths = ["/"]
 
-aws_logs_region = "us-east-2"
+aws_logs_region = "us-east-1"
 
 log_driver = "awslogs"
 
@@ -120,7 +120,7 @@ codepipeline_github_webhooks_token = "test"
 
 codepipeline_github_webhook_events = ["push"]
 
-codepipeline_repo_owner = "cloudposse"
+codepipeline_repo_owner = "francobontorin"
 
 codepipeline_repo_name = "default-backend"
 
