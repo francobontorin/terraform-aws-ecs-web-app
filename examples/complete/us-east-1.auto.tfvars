@@ -10,7 +10,7 @@ name = "ecs-web-app"
 
 vpc_cidr_block = "172.1.0.0/16"
 
-container_image = "francobontorin/default-backend"
+container_image = "francobontorin/simple-docker-app"
 
 container_cpu = 256
 
@@ -122,7 +122,7 @@ codepipeline_github_webhook_events = ["push"]
 
 codepipeline_repo_owner = "francobontorin"
 
-codepipeline_repo_name = "default-backend"
+codepipeline_repo_name = "simple-docker-app"
 
 codepipeline_branch = "master"
 
