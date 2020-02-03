@@ -93,16 +93,25 @@ output "alb_ingress_target_group_arn_suffix" {
   value       = module.ecs_web_app.alb_ingress_target_group_arn_suffix
 }
 
-output "container_definition_json" {
+output "container_definition-1_json" {
   description = "JSON encoded list of container definitions for use with other terraform resources such as aws_ecs_task_definition"
-  value       = module.ecs_web_app.container_definition_json
+  value       = module.container_definition-1.json
 }
 
-output "container_definition_json_map" {
+output "container_definition-1_json_map" {
   description = "JSON encoded container definitions for use with other terraform resources such as aws_ecs_task_definition"
-  value       = module.ecs_web_app.container_definition_json_map
+  value       = module.container_definition-1.json_map
 }
 
+output "container_definition-2_json" {
+  description = "JSON encoded list of container definitions for use with other terraform resources such as aws_ecs_task_definition"
+  value       = module.container_definition-2.json
+}
+
+output "container_definition-2_json_map" {
+  description = "JSON encoded container definitions for use with other terraform resources such as aws_ecs_task_definition"
+  value       = module.container_definition-2.json_map
+}
 output "ecs_exec_role_policy_id" {
   description = "The ECS service role policy ID, in the form of `role_name:role_policy_name`"
   value       = module.ecs_web_app.ecs_exec_role_policy_id
