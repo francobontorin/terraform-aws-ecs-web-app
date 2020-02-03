@@ -95,7 +95,7 @@ module "container_definition-2" {
   container_cpu                = 10
   entrypoint                   = ["sh", "-c"]
   command                      = ["/bin/sh -c \"while true; do /bin/date > /var/www/my-vol/date; sleep 1; done\""]
-  volumes_from [        
+  volumes_from = [        
     {
       sourceContainer          = module.default_label.id
     }
