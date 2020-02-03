@@ -14,7 +14,7 @@ container_image = "francobontorin/simple-docker-app"
 
 container_cpu = 128
 
-container_memory = 512
+container_memory = 256
 
 container_memory_reservation = 128
 
