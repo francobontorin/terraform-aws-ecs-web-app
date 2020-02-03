@@ -40,6 +40,7 @@ mount_points = [
 volumes = [
   {
     name      = "my-vol"
+    host_path = null
     docker_volume_configuration = []
   }
 ]
