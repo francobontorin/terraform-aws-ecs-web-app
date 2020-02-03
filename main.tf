@@ -59,7 +59,7 @@ module "alb_ingress" {
   authentication_oidc_user_info_endpoint     = var.authentication_oidc_user_info_endpoint
 }
 
-module "container_definition" {
+module "container_definition-1" {
   source                       = "git::https://github.com/cloudposse/terraform-aws-ecs-container-definition.git?ref=tags/0.22.0"
   container_name               = module.default_label.id
   container_image              = var.container_image
@@ -85,6 +85,20 @@ module "container_definition" {
     }
     secretOptions = null
   }
+}
+
+module "container_definition-2" {
+  source                       = "git::https://github.com/cloudposse/terraform-aws-ecs-container-definition.git?ref=tags/0.22.0"
+  container_name               = "busybox"
+  container_image              = "busybox"
+  container_memory             = 500
+  container_cpu                = 10
+  entrypoint                   = ["sh", "-c"]
+  command                      = ["/bin/sh -c \"while true; do /bin/date > /var/www/my-vol/date; sleep 1; done\""]
+  volumes_from [        
+    {
+      sourceContainer: module.default_label.id
+    }]
 }
 
 locals {
@@ -124,7 +138,7 @@ module "ecs_alb_service_task" {
   use_alb_security_group            = var.use_alb_security_group
   nlb_cidr_blocks                   = var.nlb_cidr_blocks
   use_nlb_cidr_blocks               = var.use_nlb_cidr_blocks
-  container_definition_json         = "[${join(",", concat(local.init_container_definitions, [module.container_definition.json_map]))}]"
+  container_definition_json         = "[${join(",", concat(local.init_container_definitions, [module.container_definition-1.json_map], [module.container_definition-2.json_map]))}]"
   desired_count                     = var.desired_count
   health_check_grace_period_seconds = var.health_check_grace_period_seconds
   task_cpu                          = coalesce(var.task_cpu, var.container_cpu)
