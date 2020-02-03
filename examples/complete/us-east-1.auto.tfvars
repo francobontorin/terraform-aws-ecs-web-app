@@ -12,7 +12,7 @@ vpc_cidr_block = "172.1.0.0/16"
 
 container_image = "francobontorin/simple-docker-app"
 
-container_cpu = 128
+container_cpu = 256
 
 container_memory = 256
 

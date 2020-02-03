@@ -92,7 +92,7 @@ module "container_definition-2" {
   container_name               = "busybox"
   container_image              = "busybox"
   container_memory             = 128
-  container_cpu                = 1
+  container_cpu                = 50
   entrypoint                   = ["sh", "-c"]
   command                      = ["/bin/sh -c \"while true; do /bin/date > /var/www/my-vol/date; sleep 1; done\""]
   volumes_from = [        
@@ -150,8 +150,8 @@ module "ecs_alb_service_task" {
   container_definition_json         = "[${join(",", concat([module.container_definition-1.json_map], [module.container_definition-2.json_map]))}]"
   desired_count                     = var.desired_count
   health_check_grace_period_seconds = var.health_check_grace_period_seconds
-  task_cpu                          = coalesce(var.task_cpu, var.container_cpu)
-  task_memory                       = coalesce(var.task_memory, var.container_memory)
+  task_cpu                          = coalesce(512, var.container_cpu)
+  task_memory                       = coalesce(512, var.container_memory)
   ecs_cluster_arn                   = var.ecs_cluster_arn
   launch_type                       = var.launch_type
   vpc_id                            = var.vpc_id
