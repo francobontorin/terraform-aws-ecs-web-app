@@ -101,7 +101,7 @@ module "container_definition-2" {
       readOnly                 = false
     }
   ]
-  container_port_mappings = [
+  port_mappings = [
   {
     containerPort = 8080
     hostPort      = 8080
