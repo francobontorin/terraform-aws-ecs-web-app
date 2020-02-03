@@ -539,3 +539,35 @@ variable "codepipeline_s3_bucket_force_destroy" {
   description = "A boolean that indicates all objects should be deleted from the CodePipeline artifact store S3 bucket so that the bucket can be destroyed without error"
   default     = false
 }
+
+variable "volumes" {
+  type = list(object({
+    host_path = string
+    name      = string
+    docker_volume_configuration = list(object({
+      autoprovision = bool
+      driver        = string
+      driver_opts   = map(string)
+      labels        = map(string)
+      scope         = string
+    }))
+  }))
+  description = "Task volume definitions as list of configuration objects"
+  default     = []
+}
+
+variable "mount_points" {
+  type = list(object({
+    containerPath = string
+    sourceVolume  = string
+  }))
+
+  description = "Container mount points. This is a list of maps, where each map should contain a `containerPath` and `sourceVolume`"
+  default     = null
+}
+
+variable "entrypoint" {
+  type        = list(string)
+  description = "The entry point that is passed to the container"
+  default     = null
+}
