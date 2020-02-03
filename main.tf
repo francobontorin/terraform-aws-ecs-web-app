@@ -97,8 +97,9 @@ module "container_definition-2" {
   command                      = ["/bin/sh -c \"while true; do /bin/date > /var/www/my-vol/date; sleep 1; done\""]
   volumes_from [        
     {
-      sourceContainer: module.default_label.id
-    }]
+      sourceContainer          = module.default_label.id
+    }
+  ]
 }
 
 locals {
