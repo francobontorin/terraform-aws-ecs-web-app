@@ -140,7 +140,7 @@ module "ecs_alb_service_task" {
   use_alb_security_group            = var.use_alb_security_group
   nlb_cidr_blocks                   = var.nlb_cidr_blocks
   use_nlb_cidr_blocks               = var.use_nlb_cidr_blocks
-  container_definition_json         = "[${join(",", concat(local.init_container_definitions, [module.container_definition-1.json_map], [module.container_definition-2.json_map]))}]"
+  container_definition_json         = "[${join(",", concat([module.container_definition-1.json_map], [module.container_definition-2.json_map]))}]"
   desired_count                     = var.desired_count
   health_check_grace_period_seconds = var.health_check_grace_period_seconds
   task_cpu                          = coalesce(var.task_cpu, var.container_cpu)
