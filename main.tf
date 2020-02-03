@@ -98,6 +98,7 @@ module "container_definition-2" {
   volumes_from = [        
     {
       sourceContainer          = module.default_label.id
+      readOnly                 = false
     }
   ]
 }
