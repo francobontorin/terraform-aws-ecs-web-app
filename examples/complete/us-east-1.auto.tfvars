@@ -40,7 +40,6 @@ mount_points = [
 volumes = [
   {
     name      = "my-vol"
-    host_path = "/ecs/my-vol"
     docker_volume_configuration = []
   }
 ]
