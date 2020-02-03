@@ -28,6 +28,21 @@ container_port_mappings = [
   }
 ]
 
+entrypoint = ["/var/www/bin/console", "server:run", "0.0.0.0:80"]
+
+mount_points = [
+  {
+    containerPath = "/var/www/my-vol"
+    sourceVolume = "my-vol"
+  }
+]
+
+volumes = [
+  {
+    name      = "my-vol"
+  }
+]
+
 desired_count = 1
 
 launch_type = "FARGATE"

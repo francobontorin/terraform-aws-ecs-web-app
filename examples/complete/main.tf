@@ -92,6 +92,9 @@ module "ecs_web_app" {
   log_driver                   = var.log_driver
   aws_logs_region              = var.region
   healthcheck                  = var.healthcheck
+  mount_points                 = var.mount_points
+  entrypoints                  = var.entrypoints
+  volumes                      = var.volumes
 
   // Authentication
   authentication_type                           = var.authentication_type
