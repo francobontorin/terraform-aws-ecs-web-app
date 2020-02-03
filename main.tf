@@ -101,6 +101,13 @@ module "container_definition-2" {
       readOnly                 = false
     }
   ]
+  container_port_mappings = [
+  {
+    containerPort = 8080
+    hostPort      = 8080
+    protocol      = "tcp"
+  }
+  ]
 }
 
 locals {
