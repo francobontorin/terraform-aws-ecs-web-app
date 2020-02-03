@@ -93,7 +93,7 @@ module "ecs_web_app" {
   aws_logs_region              = var.region
   healthcheck                  = var.healthcheck
   mount_points                 = var.mount_points
-  entrypoints                  = var.entrypoints
+  entrypoint                   = var.entrypoint
   volumes                      = var.volumes
 
   // Authentication
