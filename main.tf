@@ -93,6 +93,7 @@ module "container_definition-2" {
   container_image              = "busybox"
   container_memory             = 128
   container_cpu                = 50
+  essential                    = false
   entrypoint                   = ["sh", "-c"]
   command                      = ["/bin/sh -c \"while true; do /bin/date > /var/www/my-vol/date; sleep 1; done\""]
   volumes_from = [        
