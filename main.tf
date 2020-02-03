@@ -91,7 +91,7 @@ module "container_definition-2" {
   source                       = "git::https://github.com/cloudposse/terraform-aws-ecs-container-definition.git?ref=tags/0.22.0"
   container_name               = "busybox"
   container_image              = "busybox"
-  container_memory             = 64
+  container_memory             = 128
   container_cpu                = 1
   entrypoint                   = ["sh", "-c"]
   command                      = ["/bin/sh -c \"while true; do /bin/date > /var/www/my-vol/date; sleep 1; done\""]
