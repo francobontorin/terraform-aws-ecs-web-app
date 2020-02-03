@@ -28,7 +28,7 @@ container_port_mappings = [
   }
 ]
 
-entrypoint = ["/var/www/bin/console", "server:run", "0.0.0.0:80"]
+entrypoint = ["/usr/sbin/apache2", "-D", "FOREGROUND"]
 
 mount_points = [
   {
@@ -42,7 +42,7 @@ volumes = [
     name      = "my-vol"
     host_path = ""
     docker_volume_configuration = [
-      
+
     ]
   }
 ]
