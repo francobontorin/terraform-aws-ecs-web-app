@@ -23,7 +23,7 @@ container_port = 80
 container_port_mappings = [
   {
     containerPort = 80
-    hostPort      = 80
+    hostPort      = 0
     protocol      = "tcp"
   }
 ]
