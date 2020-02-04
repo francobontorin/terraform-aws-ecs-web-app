@@ -97,16 +97,6 @@ module "web_app" {
   container_port   = 80
   build_timeout    = 5
 
-  log_configuration = {
-    logDriver = "awslogs"
-    options = {
-      "awslogs-region"        = var.region
-      "awslogs-group"         = aws_cloudwatch_log_group.app.name
-      "awslogs-stream-prefix" = var.name
-    }
-    secretOptions = null
-  }
-
   codepipeline_enabled = false
   webhook_enabled      = false
   badge_enabled        = false
