@@ -23,12 +23,12 @@ module "subnets" {
   namespace            = var.namespace
   stage                = var.stage
   name                 = var.name
+  region               = var.region
   vpc_id               = module.vpc.vpc_id
   igw_id               = module.vpc.igw_id
   cidr_block           = module.vpc.vpc_cidr_block
   nat_gateway_enabled  = true
   nat_instance_enabled = false
-  tags                 = var.tags
 }
 
 module "alb" {
@@ -70,74 +70,65 @@ resource "aws_cloudwatch_log_group" "app" {
 }
 
 module "web_app" {
-  source     = "../.."
+  source     = "../../"
   namespace  = var.namespace
   stage      = var.stage
   name       = var.name
-  attributes = var.attributes
-  delimiter  = var.delimiter
-  tags       = var.tags
+  attributes = compact(concat(var.attributes, ["app"]))
 
-  region = var.region
-  vpc_id = module.vpc.vpc_id
+  region      = var.region
+  launch_type = "FARGATE"
+  vpc_id      = module.vpc.vpc_id
 
-  // Container
-  container_image              = var.container_image
-  container_cpu                = var.container_cpu
-  container_memory             = var.container_memory
-  container_memory_reservation = var.container_memory_reservation
-  port_mappings                = var.container_port_mappings
-  log_driver                   = var.log_driver
-  aws_logs_region              = var.region
-  healthcheck                  = var.healthcheck
-  mount_points                 = var.mount_points
-  entrypoint                   = var.entrypoint
-  volumes                      = var.volumes
+  environment = [
+    {
+      name  = "LAUNCH_TYPE"
+      value = "FARGATE"
+    },
+    {
+      name  = "VPC_ID"
+      value = module.vpc.vpc_id
+    }
+  ]
 
- // ECS
-  ecs_private_subnet_ids            = module.subnets.private_subnet_ids
-  ecs_cluster_arn                   = aws_ecs_cluster.default.arn
-  ecs_cluster_name                  = aws_ecs_cluster.default.name
-  ecs_security_group_ids            = var.ecs_security_group_ids
-  health_check_grace_period_seconds = var.health_check_grace_period_seconds
-  desired_count                     = var.desired_count
-  launch_type                       = var.launch_type
-  container_port                    = var.container_port
+  desired_count    = 1
+  container_image  = var.default_container_image
+  container_cpu    = 256
+  container_memory = 512
+  container_port   = 80
+  build_timeout    = 5
 
-  // CodePipeline
-  codepipeline_enabled                 = var.codepipeline_enabled
-  badge_enabled                        = var.codepipeline_badge_enabled
-  github_oauth_token                   = var.codepipeline_github_oauth_token
-  github_webhooks_token                = var.codepipeline_github_webhooks_token
-  github_webhook_events                = var.codepipeline_github_webhook_events
-  repo_owner                           = var.codepipeline_repo_owner
-  repo_name                            = var.codepipeline_repo_name
-  branch                               = var.codepipeline_branch
-  build_image                          = var.codepipeline_build_image
-  build_timeout                        = var.codepipeline_build_timeout
-  buildspec                            = var.codepipeline_buildspec
-  poll_source_changes                  = var.poll_source_changes
-  webhook_enabled                      = var.webhook_enabled
-  webhook_target_action                = var.webhook_target_action
-  webhook_authentication               = var.webhook_authentication
-  webhook_filter_json_path             = var.webhook_filter_json_path
-  webhook_filter_match_equals          = var.webhook_filter_match_equals
-  codepipeline_s3_bucket_force_destroy = var.codepipeline_s3_bucket_force_destroy
-  environment                          = var.environment
-  secrets                              = var.secrets
+  log_configuration = {
+    logDriver = "awslogs"
+    options = {
+      "awslogs-region"        = var.region
+      "awslogs-group"         = aws_cloudwatch_log_group.app.name
+      "awslogs-stream-prefix" = var.name
+    }
+    secretOptions = null
+  }
 
-  // Autoscaling
-  autoscaling_enabled               = var.autoscaling_enabled
-  autoscaling_dimension             = var.autoscaling_dimension
-  autoscaling_min_capacity          = var.autoscaling_min_capacity
-  autoscaling_max_capacity          = var.autoscaling_max_capacity
-  autoscaling_scale_up_adjustment   = var.autoscaling_scale_up_adjustment
-  autoscaling_scale_up_cooldown     = var.autoscaling_scale_up_cooldown
-  autoscaling_scale_down_adjustment = var.autoscaling_scale_down_adjustment
-  autoscaling_scale_down_cooldown   = var.autoscaling_scale_down_cooldown
+  codepipeline_enabled = false
+  webhook_enabled      = false
+  badge_enabled        = false
+  ecs_alarms_enabled   = false
+  autoscaling_enabled  = false
 
-  // ALB
-  alb_security_group                              = module.alb.security_group_id
+  autoscaling_dimension             = "cpu"
+  autoscaling_min_capacity          = 1
+  autoscaling_max_capacity          = 2
+  autoscaling_scale_up_adjustment   = 1
+  autoscaling_scale_up_cooldown     = 60
+  autoscaling_scale_down_adjustment = -1
+  autoscaling_scale_down_cooldown   = 300
+
+  aws_logs_region        = var.region
+  ecs_cluster_arn        = aws_ecs_cluster.default.arn
+  ecs_cluster_name       = aws_ecs_cluster.default.name
+  ecs_security_group_ids = [module.vpc.vpc_default_security_group_id]
+  ecs_private_subnet_ids = module.subnets.private_subnet_ids
+
+  alb_security_group                              = "xxxxxxxx"
   alb_target_group_alarms_enabled                 = true
   alb_target_group_alarms_3xx_threshold           = 25
   alb_target_group_alarms_4xx_threshold           = 25
