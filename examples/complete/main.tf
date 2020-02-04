@@ -58,6 +58,7 @@ module "alb" {
   http2_enabled                           = true
   deletion_protection_enabled             = false
   tags                                    = var.tags
+  http_ingress_cidr_blocks                = ["0.0.0.0/0"]
 }
 
 resource "aws_ecs_cluster" "default" {
@@ -94,7 +95,6 @@ module "ecs_web_app" {
   healthcheck                  = var.healthcheck
 
   // Authentication
-  authentication_type                           = var.authentication_type
   alb_ingress_listener_unauthenticated_priority = var.alb_ingress_listener_unauthenticated_priority
   alb_ingress_listener_authenticated_priority   = var.alb_ingress_listener_authenticated_priority
   alb_ingress_unauthenticated_hosts             = var.alb_ingress_unauthenticated_hosts
@@ -123,10 +123,16 @@ module "ecs_web_app" {
 
   // ALB
   alb_arn_suffix                                  = module.alb.alb_arn_suffix
-  alb_security_group                              = module.alb.security_group_id
-  alb_ingress_unauthenticated_listener_arns       = [module.alb.http_listener_arn]
-  alb_ingress_unauthenticated_listener_arns_count = 1
-  alb_ingress_healthcheck_path                    = var.alb_ingress_healthcheck_path
+  alb_security_group                              = "XXXXXXXX"
+  alb_ingress_healthcheck_path                    = "/"
+  
+  # Without authentication, both HTTP and HTTPS endpoints are supported
+  alb_ingress_unauthenticated_listener_arns       = module.alb.listener_arns
+  alb_ingress_unauthenticated_listener_arns_count = 2
+
+  # All paths are unauthenticated
+  alb_ingress_unauthenticated_paths             = ["/*"]
+  alb_ingress_listener_unauthenticated_priority = 100
 
   // CodePipeline
   codepipeline_enabled                 = var.codepipeline_enabled
