@@ -2,76 +2,74 @@ provider "aws" {
   region = var.region
 }
 
-module "label" {
-  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.16.0"
-  namespace  = var.namespace
-  name       = var.name
-  stage      = var.stage
-  delimiter  = var.delimiter
-  attributes = var.attributes
-  tags       = var.tags
-}
-
 module "vpc" {
   source     = "git::https://github.com/cloudposse/terraform-aws-vpc.git?ref=tags/0.8.1"
   namespace  = var.namespace
   stage      = var.stage
   name       = var.name
-  delimiter  = var.delimiter
-  attributes = var.attributes
-  cidr_block = var.vpc_cidr_block
-  tags       = var.tags
+  cidr_block = "172.16.0.0/16"
+}
+
+data "aws_availability_zones" "available" {
+}
+
+locals {
+  availability_zones = slice(data.aws_availability_zones.available.names, 0, 2)
 }
 
 module "subnets" {
   source               = "git::https://github.com/cloudposse/terraform-aws-dynamic-subnets.git?ref=tags/0.16.1"
-  availability_zones   = var.availability_zones
+  availability_zones   = local.availability_zones
   namespace            = var.namespace
   stage                = var.stage
   name                 = var.name
-  attributes           = var.attributes
-  delimiter            = var.delimiter
+  region               = var.region
   vpc_id               = module.vpc.vpc_id
   igw_id               = module.vpc.igw_id
   cidr_block           = module.vpc.vpc_cidr_block
   nat_gateway_enabled  = true
   nat_instance_enabled = false
-  tags                 = var.tags
 }
 
 module "alb" {
-  source                                  = "git::https://github.com/cloudposse/terraform-aws-alb.git?ref=tags/0.7.0"
-  namespace                               = var.namespace
-  stage                                   = var.stage
-  name                                    = var.name
-  attributes                              = var.attributes
-  delimiter                               = var.delimiter
-  vpc_id                                  = module.vpc.vpc_id
-  security_group_ids                      = [module.vpc.vpc_default_security_group_id]
-  subnet_ids                              = module.subnets.public_subnet_ids
-  internal                                = false
-  http_enabled                            = true
-  access_logs_enabled                     = false
-  alb_access_logs_s3_bucket_force_destroy = true
-  access_logs_region                      = var.region
-  cross_zone_load_balancing_enabled       = true
-  http2_enabled                           = true
-  deletion_protection_enabled             = false
-  tags                                    = var.tags
+  source                    = "git::https://github.com/cloudposse/terraform-aws-alb.git?ref=tags/0.7.0"
+  name                      = var.name
+  namespace                 = var.namespace
+  stage                     = var.stage
+  attributes                = compact(concat(var.attributes, ["alb"]))
+  vpc_id                    = module.vpc.vpc_id
+  ip_address_type           = "ipv4"
+  subnet_ids                = module.subnets.public_subnet_ids
+  security_group_ids        = [module.vpc.vpc_default_security_group_id]
+  access_logs_region        = var.region
+  https_enabled             = true
+  http_ingress_cidr_blocks  = ["0.0.0.0/0"]
+  https_ingress_cidr_blocks = ["0.0.0.0/0"]
+  certificate_arn           = var.certificate_arn
+  health_check_interval     = 60
 }
 
+module "label" {
+  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.16.0"
+  name       = var.name
+  namespace  = var.namespace
+  stage      = var.stage
+  tags       = var.tags
+  attributes = var.attributes
+  delimiter  = var.delimiter
+}
+
+# ECS Cluster (needed even if using FARGATE launch type)
 resource "aws_ecs_cluster" "default" {
+  name = module.label.id
+}
+
+resource "aws_cloudwatch_log_group" "app" {
   name = module.label.id
   tags = module.label.tags
 }
 
-resource "aws_sns_topic" "sns_topic" {
-  name         = module.label.id
-  display_name = "Test terraform-aws-ecs-web-app"
-  tags         = module.label.tags
-}
-
-module "ecs_web_app" {
+module "web_app" {
   source     = "../.."
   namespace  = var.namespace
   stage      = var.stage
@@ -96,25 +94,7 @@ module "ecs_web_app" {
   entrypoint                   = var.entrypoint
   volumes                      = var.volumes
 
-  // Authentication
-  authentication_type                           = var.authentication_type
-  alb_ingress_listener_unauthenticated_priority = var.alb_ingress_listener_unauthenticated_priority
-  alb_ingress_listener_authenticated_priority   = var.alb_ingress_listener_authenticated_priority
-  alb_ingress_unauthenticated_hosts             = var.alb_ingress_unauthenticated_hosts
-  alb_ingress_authenticated_hosts               = var.alb_ingress_authenticated_hosts
-  alb_ingress_unauthenticated_paths             = var.alb_ingress_unauthenticated_paths
-  alb_ingress_authenticated_paths               = var.alb_ingress_authenticated_paths
-  authentication_cognito_user_pool_arn          = var.authentication_cognito_user_pool_arn
-  authentication_cognito_user_pool_client_id    = var.authentication_cognito_user_pool_client_id
-  authentication_cognito_user_pool_domain       = var.authentication_cognito_user_pool_domain
-  authentication_oidc_client_id                 = var.authentication_oidc_client_id
-  authentication_oidc_client_secret             = var.authentication_oidc_client_secret
-  authentication_oidc_issuer                    = var.authentication_oidc_issuer
-  authentication_oidc_authorization_endpoint    = var.authentication_oidc_authorization_endpoint
-  authentication_oidc_token_endpoint            = var.authentication_oidc_token_endpoint
-  authentication_oidc_user_info_endpoint        = var.authentication_oidc_user_info_endpoint
-
-  // ECS
+ // ECS
   ecs_private_subnet_ids            = module.subnets.private_subnet_ids
   ecs_cluster_arn                   = aws_ecs_cluster.default.arn
   ecs_cluster_name                  = aws_ecs_cluster.default.name
@@ -123,13 +103,6 @@ module "ecs_web_app" {
   desired_count                     = var.desired_count
   launch_type                       = var.launch_type
   container_port                    = var.container_port
-
-  // ALB
-  alb_arn_suffix                                  = module.alb.alb_arn_suffix
-  alb_security_group                              = module.alb.security_group_id
-  alb_ingress_unauthenticated_listener_arns       = [module.alb.http_listener_arn]
-  alb_ingress_unauthenticated_listener_arns_count = 1
-  alb_ingress_healthcheck_path                    = var.alb_ingress_healthcheck_path
 
   // CodePipeline
   codepipeline_enabled                 = var.codepipeline_enabled
@@ -163,38 +136,25 @@ module "ecs_web_app" {
   autoscaling_scale_down_adjustment = var.autoscaling_scale_down_adjustment
   autoscaling_scale_down_cooldown   = var.autoscaling_scale_down_cooldown
 
-  // ECS alarms
-  ecs_alarms_enabled                                    = var.ecs_alarms_enabled
-  ecs_alarms_cpu_utilization_high_threshold             = var.ecs_alarms_cpu_utilization_high_threshold
-  ecs_alarms_cpu_utilization_high_evaluation_periods    = var.ecs_alarms_cpu_utilization_high_evaluation_periods
-  ecs_alarms_cpu_utilization_high_period                = var.ecs_alarms_cpu_utilization_high_period
-  ecs_alarms_cpu_utilization_low_threshold              = var.ecs_alarms_cpu_utilization_low_threshold
-  ecs_alarms_cpu_utilization_low_evaluation_periods     = var.ecs_alarms_cpu_utilization_low_evaluation_periods
-  ecs_alarms_cpu_utilization_low_period                 = var.ecs_alarms_cpu_utilization_low_period
-  ecs_alarms_memory_utilization_high_threshold          = var.ecs_alarms_memory_utilization_high_threshold
-  ecs_alarms_memory_utilization_high_evaluation_periods = var.ecs_alarms_memory_utilization_high_evaluation_periods
-  ecs_alarms_memory_utilization_high_period             = var.ecs_alarms_memory_utilization_high_period
-  ecs_alarms_memory_utilization_low_threshold           = var.ecs_alarms_memory_utilization_low_threshold
-  ecs_alarms_memory_utilization_low_evaluation_periods  = var.ecs_alarms_memory_utilization_low_evaluation_periods
-  ecs_alarms_memory_utilization_low_period              = var.ecs_alarms_memory_utilization_low_period
-  ecs_alarms_cpu_utilization_high_alarm_actions         = [aws_sns_topic.sns_topic.arn]
-  ecs_alarms_cpu_utilization_high_ok_actions            = [aws_sns_topic.sns_topic.arn]
-  ecs_alarms_cpu_utilization_low_alarm_actions          = [aws_sns_topic.sns_topic.arn]
-  ecs_alarms_cpu_utilization_low_ok_actions             = [aws_sns_topic.sns_topic.arn]
-  ecs_alarms_memory_utilization_high_alarm_actions      = [aws_sns_topic.sns_topic.arn]
-  ecs_alarms_memory_utilization_high_ok_actions         = [aws_sns_topic.sns_topic.arn]
-  ecs_alarms_memory_utilization_low_alarm_actions       = [aws_sns_topic.sns_topic.arn]
-  ecs_alarms_memory_utilization_low_ok_actions          = [aws_sns_topic.sns_topic.arn]
+  // ALB
+  alb_security_group                              = module.alb.security_group_id
+  alb_target_group_alarms_enabled                 = true
+  alb_target_group_alarms_3xx_threshold           = 25
+  alb_target_group_alarms_4xx_threshold           = 25
+  alb_target_group_alarms_5xx_threshold           = 25
+  alb_target_group_alarms_response_time_threshold = 0.5
+  alb_target_group_alarms_period                  = 300
+  alb_target_group_alarms_evaluation_periods      = 1
 
-  // ALB and Target Group alarms
-  alb_target_group_alarms_enabled                   = var.alb_target_group_alarms_enabled
-  alb_target_group_alarms_evaluation_periods        = var.alb_target_group_alarms_evaluation_periods
-  alb_target_group_alarms_period                    = var.alb_target_group_alarms_period
-  alb_target_group_alarms_3xx_threshold             = var.alb_target_group_alarms_3xx_threshold
-  alb_target_group_alarms_4xx_threshold             = var.alb_target_group_alarms_4xx_threshold
-  alb_target_group_alarms_5xx_threshold             = var.alb_target_group_alarms_5xx_threshold
-  alb_target_group_alarms_response_time_threshold   = var.alb_target_group_alarms_response_time_threshold
-  alb_target_group_alarms_alarm_actions             = [aws_sns_topic.sns_topic.arn]
-  alb_target_group_alarms_ok_actions                = [aws_sns_topic.sns_topic.arn]
-  alb_target_group_alarms_insufficient_data_actions = [aws_sns_topic.sns_topic.arn]
+  alb_arn_suffix = module.alb.alb_arn_suffix
+
+  alb_ingress_healthcheck_path = "/"
+
+  # Without authentication, both HTTP and HTTPS endpoints are supported
+  alb_ingress_unauthenticated_listener_arns       = module.alb.listener_arns
+  alb_ingress_unauthenticated_listener_arns_count = 2
+
+  # All paths are unauthenticated
+  alb_ingress_unauthenticated_paths             = ["/*"]
+  alb_ingress_listener_unauthenticated_priority = 100
 }
