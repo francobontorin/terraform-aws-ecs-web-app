@@ -139,39 +139,6 @@ module "ecs_web_app" {
   environment                          = var.environment
   secrets                              = var.secrets
 
-  // Autoscaling
-  autoscaling_enabled               = var.autoscaling_enabled
-  autoscaling_dimension             = var.autoscaling_dimension
-  autoscaling_min_capacity          = var.autoscaling_min_capacity
-  autoscaling_max_capacity          = var.autoscaling_max_capacity
-  autoscaling_scale_up_adjustment   = var.autoscaling_scale_up_adjustment
-  autoscaling_scale_up_cooldown     = var.autoscaling_scale_up_cooldown
-  autoscaling_scale_down_adjustment = var.autoscaling_scale_down_adjustment
-  autoscaling_scale_down_cooldown   = var.autoscaling_scale_down_cooldown
-
-  // ECS alarms
-  ecs_alarms_enabled                                    = var.ecs_alarms_enabled
-  ecs_alarms_cpu_utilization_high_threshold             = var.ecs_alarms_cpu_utilization_high_threshold
-  ecs_alarms_cpu_utilization_high_evaluation_periods    = var.ecs_alarms_cpu_utilization_high_evaluation_periods
-  ecs_alarms_cpu_utilization_high_period                = var.ecs_alarms_cpu_utilization_high_period
-  ecs_alarms_cpu_utilization_low_threshold              = var.ecs_alarms_cpu_utilization_low_threshold
-  ecs_alarms_cpu_utilization_low_evaluation_periods     = var.ecs_alarms_cpu_utilization_low_evaluation_periods
-  ecs_alarms_cpu_utilization_low_period                 = var.ecs_alarms_cpu_utilization_low_period
-  ecs_alarms_memory_utilization_high_threshold          = var.ecs_alarms_memory_utilization_high_threshold
-  ecs_alarms_memory_utilization_high_evaluation_periods = var.ecs_alarms_memory_utilization_high_evaluation_periods
-  ecs_alarms_memory_utilization_high_period             = var.ecs_alarms_memory_utilization_high_period
-  ecs_alarms_memory_utilization_low_threshold           = var.ecs_alarms_memory_utilization_low_threshold
-  ecs_alarms_memory_utilization_low_evaluation_periods  = var.ecs_alarms_memory_utilization_low_evaluation_periods
-  ecs_alarms_memory_utilization_low_period              = var.ecs_alarms_memory_utilization_low_period
-  ecs_alarms_cpu_utilization_high_alarm_actions         = [aws_sns_topic.sns_topic.arn]
-  ecs_alarms_cpu_utilization_high_ok_actions            = [aws_sns_topic.sns_topic.arn]
-  ecs_alarms_cpu_utilization_low_alarm_actions          = [aws_sns_topic.sns_topic.arn]
-  ecs_alarms_cpu_utilization_low_ok_actions             = [aws_sns_topic.sns_topic.arn]
-  ecs_alarms_memory_utilization_high_alarm_actions      = [aws_sns_topic.sns_topic.arn]
-  ecs_alarms_memory_utilization_high_ok_actions         = [aws_sns_topic.sns_topic.arn]
-  ecs_alarms_memory_utilization_low_alarm_actions       = [aws_sns_topic.sns_topic.arn]
-  ecs_alarms_memory_utilization_low_ok_actions          = [aws_sns_topic.sns_topic.arn]
-
   // ALB and Target Group alarms
   alb_target_group_alarms_enabled                   = var.alb_target_group_alarms_enabled
   alb_target_group_alarms_evaluation_periods        = var.alb_target_group_alarms_evaluation_periods
