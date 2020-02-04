@@ -94,23 +94,6 @@ module "ecs_web_app" {
   aws_logs_region              = var.region
   healthcheck                  = var.healthcheck
 
-  // Authentication
-  alb_ingress_listener_unauthenticated_priority = var.alb_ingress_listener_unauthenticated_priority
-  alb_ingress_listener_authenticated_priority   = var.alb_ingress_listener_authenticated_priority
-  alb_ingress_unauthenticated_hosts             = var.alb_ingress_unauthenticated_hosts
-  alb_ingress_authenticated_hosts               = var.alb_ingress_authenticated_hosts
-  alb_ingress_unauthenticated_paths             = var.alb_ingress_unauthenticated_paths
-  alb_ingress_authenticated_paths               = var.alb_ingress_authenticated_paths
-  authentication_cognito_user_pool_arn          = var.authentication_cognito_user_pool_arn
-  authentication_cognito_user_pool_client_id    = var.authentication_cognito_user_pool_client_id
-  authentication_cognito_user_pool_domain       = var.authentication_cognito_user_pool_domain
-  authentication_oidc_client_id                 = var.authentication_oidc_client_id
-  authentication_oidc_client_secret             = var.authentication_oidc_client_secret
-  authentication_oidc_issuer                    = var.authentication_oidc_issuer
-  authentication_oidc_authorization_endpoint    = var.authentication_oidc_authorization_endpoint
-  authentication_oidc_token_endpoint            = var.authentication_oidc_token_endpoint
-  authentication_oidc_user_info_endpoint        = var.authentication_oidc_user_info_endpoint
-
   // ECS
   ecs_private_subnet_ids            = module.subnets.private_subnet_ids
   ecs_cluster_arn                   = aws_ecs_cluster.default.arn
