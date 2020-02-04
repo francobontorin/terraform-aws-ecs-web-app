@@ -102,13 +102,7 @@ module "container_definition-2" {
       readOnly                 = false
     }
   ]
-  port_mappings = [
-  {
-    containerPort = 8080
-    hostPort      = 8080
-    protocol      = "tcp"
-  }
-  ]
+  port_mappings = []
 }
 
 locals {
