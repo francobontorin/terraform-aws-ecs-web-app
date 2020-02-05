@@ -45,7 +45,7 @@ volumes = [
   }
 ]
 
-desired_count = 1
+desired_count = 4
 
 launch_type = "FARGATE"
 
